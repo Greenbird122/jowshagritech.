@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Jowsh Agritech · Smart Farming with OTP</title>
+    <!-- Tailwind (lightweight CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter + Space Grotesk -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <!-- Lucide icons (dynamic) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        .modal-backdrop { backdrop-filter: blur(8px); }
+        .slide-in { transform: translateX(0); transition: transform 0.3s ease-out; }
+        .slide-out { transform: translateX(100%); transition: transform 0.3s ease-in; }
+        [data-lucide] { pointer-events: none; }
+        /* simple spinner animation */
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-white text-slate-800 antialiased selection:bg-orange-100 overflow-x-hidden">
+
+    <!-- ========== NAVIGATION (fixed) ========== -->
+    <nav id="navbar" class="fixed w-full z-[100] transition-all duration-300 bg-transparent py-5">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+            <!-- Logo (click goes to home) -->
+            <div id="logo-home" class="flex items-center gap-3 cursor-pointer z-[60]">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm overflow-hidden p-1">
+                    <img src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/jowash-logo.png" 
+                         alt="Jowsh Logo" class="w-full h-full object-contain" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i data-lucide="leaf" class="hidden text-emerald-600 w-6 h-6"></i>
+                </div>
+                <div class="flex flex-col leading-none">
+                    <span id="logo-text" class="font-display font-bold text-lg tracking-tight text-white">JOWSH</span>
+                    <span class="text-orange-500 text-[10px] font-bold tracking-[0.2em] uppercase">AGRI-TECH</span>
+                </div>
+            </div>
+
+            <!-- Desktop menu -->
+            <div class="hidden lg:flex items-center gap-6">
+                <button data-nav="home" class="nav-link text-sm font-bold text-white">Home</button>
+                <button data-nav="projects" class="nav-link text-sm font-bold text-white">Projects</button>
+                <button id="desktop-about" class="nav-link text-sm font-bold text-white">About</button>
+                <div class="h-6 w-px bg-slate-300/30"></div>
+                <button id="desktop-donate" class="flex items-center gap-2 text-sm font-bold text-white"><i data-lucide="heart" width="16"></i> Donate</button>
+                <button id="desktop-partner" class="flex items-center gap-2 text-sm font-bold text-white"><i data-lucide="handshake" width="16"></i> Partner</button>
+                <button id="desktop-login" class="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg shadow-orange-500/20 active:scale-95 transition-transform">Sign In</button>
+            </div>
+
+            <!-- Mobile menu button -->
+            <button id="menu-toggle" class="lg:hidden p-2 rounded-lg transition-colors bg-white/10 text-white">
+                <i data-lucide="menu" width="24"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- mobile menu overlay + panel -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden"></div>
+    <div id="mobile-menu-panel" class="fixed right-0 top-0 h-full w-[280px] bg-white z-[120] shadow-2xl p-6 flex flex-col transform translate-x-full transition-transform duration-300">
+        <div class="flex justify-between items-center mb-8">
+            <span class="font-display font-bold text-xl text-slate-900">MENU</span>
+            <button id="menu-close" class="p-2 text-slate-400"><i data-lucide="x" width="24"></i></button>
+        </div>
+        <div class="flex flex-col gap-1">
+            <button data-nav="home" class="mobile-nav-item flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 text-left font-bold text-slate-800"><i data-lucide="globe" width="20" class="text-orange-500"></i> Home</button>
+            <button data-nav="projects" class="mobile-nav-item flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 text-left font-bold text-slate-800"><i data-lucide="cpu" width="20" class="text-orange-500"></i> Projects</button>
+            <button id="mobile-about" class="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 text-left font-bold text-slate-800"><i data-lucide="leaf" width="20" class="text-orange-500"></i> About</button>
+            <div class="h-px bg-slate-100 my-2"></div>
+            <button id="mobile-donate" class="flex items-center gap-4 p-4 rounded-xl hover:bg-rose-50 text-left font-bold text-rose-600"><i data-lucide="heart" width="20"></i> Donate</button>
+            <button id="mobile-partner" class="flex items-center gap-4 p-4 rounded-xl hover:bg-emerald-50 text-left font-bold text-emerald-600"><i data-lucide="handshake" width="20"></i> Partner</button>
+            <button id="mobile-login" class="flex items-center gap-4 p-4 rounded-xl bg-orange-500 text-white font-bold shadow-lg shadow-orange-500/20 mt-2"><i data-lucide="user" width="20"></i> Sign In</button>
+        </div>
+    </div>
+
+    <!-- ========== MAIN VIEWS (home / projects) ========== -->
+    <main id="main-content">
+        <!-- HOME VIEW -->
+        <div id="home-view" class="block">
+            <!-- Hero section -->
+            <section class="relative min-h-screen flex items-center overflow-hidden bg-slate-900 px-4 pt-20">
+                <div class="absolute inset-0 z-0 opacity-40">
+                    <div class="absolute top-0 right-0 w-[300px] h-[300px] bg-orange-500 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-500 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
+                </div>
+                <div class="relative z-10 max-w-7xl mx-auto w-full">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-orange-400 text-xs font-bold mb-6 backdrop-blur-md">
+                        <i data-lucide="cpu" width="12"></i> Smart Agriculture AI
+                    </div>
+                    <h1 class="text-4xl md:text-8xl font-bold text-white tracking-tight mb-6 font-display leading-[1.1]">Promoting <span class="text-orange-500">Smart Agriculture</span> Through Organic Farming</h1>
+                    <p class="text-lg text-slate-300 mb-10 leading-relaxed max-w-2xl">Jowsh Agritech is an innovative agricultural centered company promoting AI integration and sustainable organic practices.</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button id="hero-projects" class="bg-orange-500 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl flex items-center justify-center gap-3">Our Projects <i data-lucide="arrow-right" width="20"></i></button>
+                        <button id="hero-mission" class="bg-white/10 text-white px-8 py-4 rounded-xl font-bold text-lg backdrop-blur-md border border-white/20">Our Mission</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mission / About section -->
+            <section class="py-20 bg-white" id="about-section">
+                <div class="max-w-7xl mx-auto px-4">
+                    <div class="grid lg:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <span class="text-orange-500 font-bold uppercase text-xs tracking-widest">About Us</span>
+                            <h2 class="text-3xl font-bold font-display mt-2 text-slate-900 mb-6">Innovative Excellence</h2>
+                            <p class="text-slate-600 leading-relaxed mb-6">Jowsh Agritech is focused on promoting smart agriculture through organic farming and AI integration. We empower farmers to use smart technology to increase production and farm waste reduction.</p>
+                            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-5 rounded-r-xl mb-8">
+                                <h4 class="font-bold text-emerald-900 flex items-center gap-2 mb-1"><i data-lucide="shield-check" width="16"></i> Our Mission</h4>
+                                <p class="text-emerald-800 text-sm">Empowering farmers to use smart technology for production increase and waste recycling.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-6 bg-slate-50 rounded-2xl text-center flex flex-col items-center"><i data-lucide="leaf" class="text-emerald-500 w-6 h-6 mb-3"></i><h5 class="font-bold text-sm">Organic</h5></div>
+                            <div class="p-6 bg-slate-50 rounded-2xl text-center flex flex-col items-center"><i data-lucide="cpu" class="text-orange-500 w-6 h-6 mb-3"></i><h5 class="font-bold text-sm">AI Tech</h5></div>
+                            <div class="p-6 bg-slate-50 rounded-2xl text-center flex flex-col items-center"><i data-lucide="recycle" class="text-blue-500 w-6 h-6 mb-3"></i><h5 class="font-bold text-sm">Recycling</h5></div>
+                            <div class="p-6 bg-slate-50 rounded-2xl text-center flex flex-col items-center"><i data-lucide="trending-up" class="text-purple-500 w-6 h-6 mb-3"></i><h5 class="font-bold text-sm">Yields</h5></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PROJECTS VIEW (initially hidden) -->
+        <div id="projects-view" class="hidden pt-24 pb-20 bg-slate-50 min-h-screen px-4">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl font-bold font-display mb-10 text-slate-900">Our <span class="text-orange-500">Projects</span></h1>
+                <div class="space-y-12">
+                    <!-- Mkulima Alert -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-blue-600 p-8 text-white relative">
+                            <h2 class="text-2xl font-bold font-display mb-2">Mkulima Alert</h2>
+                            <p class="text-white/80 text-sm font-medium uppercase tracking-wider">AI-Enabled Quality Information</p>
+                        </div>
+                        <div class="p-8">
+                            <p class="text-slate-600 mb-8 leading-relaxed">Mkulima Alert is an innovative system that compiles quality information from global and local research bodies like the Food and Agriculture Organization (FAO) and the Kenya Agriculture and Research Institute (KARI). Using AI, we simplify complex data into actionable advice.</p>
+                            <div class="grid sm:grid-cols-2 gap-6 mb-8">
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="cloud-sun" width="24"></i></div><div><h4 class="font-bold text-sm">Weather Reports</h4><p class="text-xs text-slate-500">Real-time updates.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="flask-conical" width="24"></i></div><div><h4 class="font-bold text-sm">Fertilizers</h4><p class="text-xs text-slate-500">Best brands & methods.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="bug" width="24"></i></div><div><h4 class="font-bold text-sm">Pest Alerts</h4><p class="text-xs text-slate-500">Early warnings.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="database" width="24"></i></div><div><h4 class="font-bold text-sm">Research</h4><p class="text-xs text-slate-500">FAO & KARI data.</p></div></div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-500 text-sm font-medium text-center italic">Live platform integration coming soon</div>
+                        </div>
+                    </div>
+                    <!-- Waste Management with external link -->
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-emerald-600 p-8 text-white relative">
+                            <h2 class="text-2xl font-bold font-display mb-2">Waste Management</h2>
+                            <p class="text-white/80 text-sm font-medium uppercase tracking-wider">Circular Organic Farming</p>
+                        </div>
+                        <div class="p-8">
+                            <p class="text-slate-600 mb-8 leading-relaxed">Conversion of farm waste into manure through Black Soldier Fly (BSF) farming. Larvae feed on organic waste to produce 'Frass'—a high-quality organic fertilizer.</p>
+                            <div class="grid sm:grid-cols-2 gap-6 mb-8">
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="recycle" width="24"></i></div><div><h4 class="font-bold text-sm">Conversion</h4><p class="text-xs text-slate-500">Waste to products.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="sprout" width="24"></i></div><div><h4 class="font-bold text-sm">Frass</h4><p class="text-xs text-slate-500">Premium manure.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="bug" width="24"></i></div><div><h4 class="font-bold text-sm">BSF Tech</h4><p class="text-xs text-slate-500">Efficient recycling.</p></div></div>
+                                <div class="flex gap-4 items-start"><div class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="leaf" width="24"></i></div><div><h4 class="font-bold text-sm">Organic</h4><p class="text-xs text-slate-500">Soil restoration.</p></div></div>
+                            </div>
+                            <a href="https://jowsh-agritech.github.io/Smart-Farming/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-between p-5 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all group shadow-lg shadow-emerald-200">
+                                <span class="flex items-center gap-3"><i data-lucide="external-link" width="20"></i> Explore Smart Farming Website</span>
+                                <i data-lucide="chevron-right" width="20" class="group-hover:translate-x-1 transition-transform"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Assistant CTA -->
+    <section class="py-20 bg-slate-50 px-4">
+        <div class="max-w-4xl mx-auto bg-white rounded-[2.5rem] p-8 md:p-12 border border-slate-200 shadow-xl relative overflow-hidden text-center">
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-20 h-20 bg-orange-100 rounded-3xl flex items-center justify-center mb-6 shadow-inner"><i data-lucide="bot" class="w-10 h-10 text-orange-500"></i></div>
+                <h3 class="text-3xl font-bold font-display text-slate-900 mb-4">Quick AI Inquiry</h3>
+                <p class="text-slate-500 mb-8 max-w-md">Our agricultural AI assistant is ready to answer your questions about BSF farming or Mkulima Alert services.</p>
+                <button id="ai-chat-btn" class="w-full max-w-sm bg-orange-500 text-white font-bold py-5 rounded-2xl hover:bg-orange-600 flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-lg shadow-orange-500/30">Launch AI Assistant <i data-lucide="sparkles" width="20"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white py-16 px-4">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div>
+                <div class="flex items-center gap-3 cursor-pointer" id="footer-logo">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1"><img src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/jowash-logo.png" alt="" class="w-full h-full object-contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><i data-lucide="leaf" class="hidden text-emerald-600 w-6 h-6"></i></div>
+                    <div><span class="font-display font-bold text-lg text-white">JOWSH</span><span class="text-orange-500 text-[10px] block font-bold tracking-widest">AGRI-TECH</span></div>
+                </div>
+                <p class="mt-6 text-slate-400 text-sm leading-relaxed">Empowering farmers through AI integration and sustainable organic practices for a smart agricultural future.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-6 flex items-center gap-2 text-orange-500"><i data-lucide="phone" width="16"></i> Support</h4>
+                <div class="space-y-3 text-sm font-medium text-slate-300"><p>0723100467</p><p>0758336196</p><p>0759741258</p></div>
+            </div>
+            <div>
+                <h4 class="font-bold mb-6 flex items-center gap-2 text-emerald-500"><i data-lucide="mail" width="16"></i> Contact</h4>
+                <div class="space-y-3 text-sm font-medium text-slate-300"><p>austinewandera01@gmail.com</p><p>onyangobevan163@gmail.com</p></div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 text-center text-slate-500 text-[10px] uppercase tracking-widest font-bold">© 2025 JOWSH AGRI-TECH. ALL RIGHTS RESERVED.</div>
+    </footer>
+
+    <!-- ========== MODALS ========== -->
+    <!-- LOGIN MODAL (with OTP steps) -->
+    <div id="login-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md modal-close"></div>
+        <div class="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl">
+            <div class="bg-slate-900 p-8 text-white">
+                <h3 class="text-2xl font-bold font-display">Client Sign In</h3>
+                <p class="text-slate-400 text-sm mt-1" id="login-subtitle">Access your smart farm dashboard</p>
+            </div>
+            <!-- Step 1: request OTP -->
+            <div id="login-step1" class="p-8 space-y-5">
+                <input type="tel" id="phone-input" placeholder="Phone number (e.g. 0723100467)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 outline-none">
+                <input type="email" id="email-input" placeholder="Email (optional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 outline-none">
+                <!-- Premium selector -->
+                <div id="premium-check" class="p-4 rounded-2xl border-2 cursor-pointer flex items-center gap-4 border-slate-100 bg-white">
+                    <div id="premium-radio" class="w-6 h-6 rounded-full border-2 flex items-center justify-center border-slate-300"></div>
+                    <h5 class="font-bold text-slate-900 text-sm">Premium Access <span class="text-orange-600 ml-2">Sh20/mo</span></h5>
+                </div>
+                <button id="send-otp-btn" class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2">Send OTP</button>
+                <button type="button" class="modal-close w-full text-slate-400 text-sm font-bold">Close</button>
+            </div>
+            <!-- Step 2: verify OTP (hidden initially) -->
+            <div id="login-step2" class="hidden p-8 space-y-5">
+                <p class="text-sm text-slate-600 mb-2">Enter the 6-digit code sent to <span id="otp-phone-display" class="font-bold"></span></p>
+                <input type="text" id="otp-input" placeholder="6-digit OTP" maxlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 outline-none text-center text-lg tracking-widest">
+                <button id="verify-otp-btn" class="w-full bg-orange-500 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2">Verify & Sign In</button>
+                <button id="back-to-step1" class="w-full text-slate-500 text-sm font-semibold flex items-center justify-center gap-1"><i data-lucide="arrow-left" width="16"></i> Back</button>
+                <button type="button" class="modal-close w-full text-slate-400 text-sm font-bold">Close</button>
+            </div>
+            <!-- Success message (replaces steps) -->
+            <div id="login-success" class="hidden p-12 text-center flex flex-col items-center">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4"><i data-lucide="check-circle-2" width="32"></i></div>
+                <h4 class="text-xl font-bold text-slate-900">Success!</h4>
+                <p id="success-message" class="text-slate-500 mt-2"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donate Modal -->
+    <div id="donate-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md modal-close"></div>
+        <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 text-center shadow-2xl">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6"><i data-lucide="heart" width="32"></i></div>
+            <h3 class="text-2xl font-bold font-display text-slate-900 mb-2">Support Our Cause</h3>
+            <p class="text-slate-500 mb-8 italic">"Building a smarter, greener future together."</p>
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-left"><p class="text-xs font-bold text-slate-400 uppercase mb-1">M-PESA TILL NUMBER</p><p class="text-xl font-bold text-slate-900">4567890</p></div>
+                <button class="modal-close w-full bg-slate-900 text-white py-4 rounded-xl font-bold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Partner Modal -->
+    <div id="partner-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md modal-close"></div>
+        <div class="relative bg-white w-full max-w-md rounded-[2.5rem] p-8 text-center shadow-2xl">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6"><i data-lucide="handshake" width="32"></i></div>
+            <h3 class="text-2xl font-bold font-display text-slate-900 mb-2">Partner with Jowsh</h3>
+            <p class="text-slate-500 mb-8">Reach out via our email for partnership inquiries, investment opportunities, or bulk orders.</p>
+            <div class="space-y-4">
+                <a href="mailto:austinewandera01@gmail.com" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold block">Contact Us Now</a>
+                <button class="modal-close w-full font-bold text-slate-400">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot embed script (Chatling) -->
+    <script>
+        window.chtlConfig = { chatbotId: "5398288433" };
+        (function() {
+            var script = document.createElement("script");
+            script.async = true;
+            script.dataset.id = "5398288433";
+            script.id = "chtl-script";
+            script.type = "text/javascript";
+            script.src = "https://chatling.ai/js/embed.js";
+            document.body.appendChild(script);
+        })();
+
+        // Main vanilla JS interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+
+            // ----- DOM elements -----
+            const navbar = document.getElementById('navbar');
+            const logoText = document.getElementById('logo-text');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const menuToggle = document.getElementById('menu-toggle');
+            const menuPanel = document.getElementById('mobile-menu-panel');
+            const menuOverlay = document.getElementById('mobile-menu-overlay');
+            const menuClose = document.getElementById('menu-close');
+            const homeView = document.getElementById('home-view');
+            const projectsView = document.getElementById('projects-view');
+            const heroProjects = document.getElementById('hero-projects');
+            const heroMission = document.getElementById('hero-mission');
+            const desktopAbout = document.getElementById('desktop-about');
+            const mobileAbout = document.getElementById('mobile-about');
+            const footerLogo = document.getElementById('footer-logo');
+            const logoHome = document.getElementById('logo-home');
+
+            // Modals
+            const loginModal = document.getElementById('login-modal');
+            const donateModal = document.getElementById('donate-modal');
+            const partnerModal = document.getElementById('partner-modal');
+
+            // Login modal elements
+            const step1 = document.getElementById('login-step1');
+            const step2 = document.getElementById('login-step2');
+            const loginSuccessDiv = document.getElementById('login-success');
+            const phoneInput = document.getElementById('phone-input');
+            const emailInput = document.getElementById('email-input');
+            const premiumCheck = document.getElementById('premium-check');
+            const premiumRadio = document.getElementById('premium-radio');
+            const sendOtpBtn = document.getElementById('send-otp-btn');
+            const verifyOtpBtn = document.getElementById('verify-otp-btn');
+            const otpInput = document.getElementById('otp-input');
+            const otpPhoneDisplay = document.getElementById('otp-phone-display');
+            const backToStep1 = document.getElementById('back-to-step1');
+            const successMsg = document.getElementById('success-message');
+            const loginSubtitle = document.getElementById('login-subtitle');
+
+            let isPremium = false;
+            let currentPhone = '';
+
+            // ----- Navbar scroll effect (as before) -----
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'py-3');
+                    navbar.classList.remove('bg-transparent', 'py-5');
+                    logoText.classList.remove('text-white');
+                    logoText.classList.add('text-slate-900');
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        if (link !== desktopAbout && link.id !== 'desktop-donate' && link.id !== 'desktop-partner' && link.id !== 'desktop-login') {
+                            link.classList.remove('text-white');
+                            link.classList.add('text-slate-700');
+                        }
+                    });
+                    const donateBtn = document.getElementById('desktop-donate');
+                    const partnerBtn = document.getElementById('desktop-partner');
+                    if (donateBtn) { donateBtn.classList.remove('text-white'); donateBtn.classList.add('text-rose-600'); }
+                    if (partnerBtn) { partnerBtn.classList.remove('text-white'); partnerBtn.classList.add('text-emerald-600'); }
+                } else {
+                    navbar.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-md', 'py-3');
+                    navbar.classList.add('bg-transparent', 'py-5');
+                    logoText.classList.remove('text-slate-900');
+                    logoText.classList.add('text-white');
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('text-slate-700');
+                        link.classList.add('text-white');
+                    });
+                    const donateBtn = document.getElementById('desktop-donate');
+                    const partnerBtn = document.getElementById('desktop-partner');
+                    if (donateBtn) { donateBtn.classList.remove('text-rose-600'); donateBtn.classList.add('text-white'); }
+                    if (partnerBtn) { partnerBtn.classList.remove('text-emerald-600'); partnerBtn.classList.add('text-white'); }
+                }
+            });
+
+            // ----- View navigation (home/projects) -----
+            function showHome() { homeView.classList.remove('hidden'); projectsView.classList.add('hidden'); }
+            function showProjects() { homeView.classList.add('hidden'); projectsView.classList.remove('hidden'); window.scrollTo(0,0); }
+
+            document.querySelectorAll('[data-nav="home"]').forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); showHome(); closeMenu(); }));
+            document.querySelectorAll('[data-nav="projects"]').forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); showProjects(); closeMenu(); }));
+            if (heroProjects) heroProjects.addEventListener('click', showProjects);
+            if (footerLogo) footerLogo.addEventListener('click', showHome);
+            if (logoHome) logoHome.addEventListener('click', showHome);
+
+            function scrollToAbout() { 
+                if (!homeView.classList.contains('hidden')) { document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' }); }
+                else { showHome(); setTimeout(() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' }), 150); }
+                closeMenu(); 
+            }
+            if (desktopAbout) desktopAbout.addEventListener('click', scrollToAbout);
+            if (mobileAbout) mobileAbout.addEventListener('click', scrollToAbout);
+            if (heroMission) heroMission.addEventListener('click', scrollToAbout);
+
+            // ----- Mobile menu -----
+            function openMenu() { menuPanel.classList.remove('translate-x-full'); menuOverlay.classList.remove('hidden'); }
+            function closeMenu() { menuPanel.classList.add('translate-x-full'); menuOverlay.classList.add('hidden'); }
+            menuToggle.addEventListener('click', openMenu);
+            menuClose.addEventListener('click', closeMenu);
+            menuOverlay.addEventListener('click', closeMenu);
+            document.querySelectorAll('.mobile-nav-item').forEach(item => item.addEventListener('click', closeMenu));
+
+            // ----- Modal open/close helpers -----
+            function closeAllModals() {
+                loginModal.classList.add('hidden');
+                donateModal.classList.add('hidden');
+                partnerModal.classList.add('hidden');
+                // reset login modal to step1
+                step1.classList.remove('hidden');
+                step2.classList.add('hidden');
+                loginSuccessDiv.classList.add('hidden');
+                phoneInput.value = '';
+                emailInput.value = '';
+                otpInput.value = '';
+                isPremium = false;
+                premiumRadio.className = 'w-6 h-6 rounded-full border-2 flex items-center justify-center border-slate-300';
+                premiumRadio.innerHTML = '';
+                premiumCheck.classList.remove('border-orange-500', 'bg-orange-50');
+                premiumCheck.classList.add('border-slate-100', 'bg-white');
+                loginSubtitle.innerText = 'Access your smart farm dashboard';
+            }
+            document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeAllModals));
+
+            // Open specific modals
+            document.querySelectorAll('#desktop-donate, #mobile-donate').forEach(el => el.addEventListener('click', () => { closeAllModals(); donateModal.classList.remove('hidden'); }));
+            document.querySelectorAll('#desktop-partner, #mobile-partner').forEach(el => el.addEventListener('click', () => { closeAllModals(); partnerModal.classList.remove('hidden'); }));
+            document.querySelectorAll('#desktop-login, #mobile-login').forEach(el => el.addEventListener('click', () => { 
+                closeAllModals(); 
+                loginModal.classList.remove('hidden');
+                // ensure step1 visible
+                step1.classList.remove('hidden');
+                step2.classList.add('hidden');
+                loginSuccessDiv.classList.add('hidden');
+            }));
+
+            // Premium toggle
+            premiumCheck.addEventListener('click', () => {
+                isPremium = !isPremium;
+                if (isPremium) {
+                    premiumRadio.className = 'w-6 h-6 rounded-full border-2 flex items-center justify-center border-orange-500 bg-orange-500';
+                    premiumRadio.innerHTML = '<i data-lucide="check-circle-2" width="14" class="text-white"></i>';
+                    premiumCheck.classList.add('border-orange-500', 'bg-orange-50');
+                    premiumCheck.classList.remove('border-slate-100', 'bg-white');
+                } else {
+                    premiumRadio.className = 'w-6 h-6 rounded-full border-2 flex items-center justify-center border-slate-300';
+                    premiumRadio.innerHTML = '';
+                    premiumCheck.classList.remove('border-orange-500', 'bg-orange-50');
+                    premiumCheck.classList.add('border-slate-100', 'bg-white');
+                }
+                lucide.createIcons();
+            });
+
+            // ----- Mock API functions (replace with real fetch when deploying) -----
+            function mockSendOtp(phone) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        // always succeed, but you could add validation
+                        resolve({ success: true, message: 'OTP sent' });
+                    }, 1500);
+                });
+            }
+            function mockVerifyOtp(phone, otp) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        // Accept any 6-digit code for demo
+                        if (otp && otp.length === 6) resolve({ success: true });
+                        else resolve({ success: false, message: 'Invalid OTP' });
+                    }, 1500);
+                });
+            }
+
+            // Step1: Send OTP
+            sendOtpBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const phone = phoneInput.value.trim();
+                if (!phone) {
+                    alert('Please enter phone number');
+                    return;
+                }
+                currentPhone = phone;
+                // Disable button, show spinner
+                sendOtpBtn.disabled = true;
+                sendOtpBtn.innerHTML = '<i data-lucide="loader-2" width="20" class="animate-spin"></i> Sending...';
+                lucide.createIcons();
+
+                const result = await mockSendOtp(phone);
+                if (result.success) {
+                    // move to step2
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    otpPhoneDisplay.innerText = phone;
+                    loginSubtitle.innerText = 'Verify OTP sent to your phone';
+                } else {
+                    alert('Failed to send OTP. Try again.');
+                }
+                sendOtpBtn.disabled = false;
+                sendOtpBtn.innerHTML = 'Send OTP';
+                lucide.createIcons();
+            });
+
+            // Back to step1
+            backToStep1.addEventListener('click', () => {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                loginSubtitle.innerText = 'Access your smart farm dashboard';
+                otpInput.value = '';
+            });
+
+            // Step2: Verify OTP
+            verifyOtpBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const otp = otpInput.value.trim();
+                if (!otp || otp.length !== 6) {
+                    alert('Please enter a valid 6-digit OTP');
+                    return;
+                }
+                verifyOtpBtn.disabled = true;
+                verifyOtpBtn.innerHTML = '<i data-lucide="loader-2" width="20" class="animate-spin"></i> Verifying...';
+                lucide.createIcons();
+
+                const result = await mockVerifyOtp(currentPhone, otp);
+                if (result.success) {
+                    // show success
+                    step2.classList.add('hidden');
+                    loginSuccessDiv.classList.remove('hidden');
+                    const premiumText = isPremium ? 'Premium Subscription Active (Sh20 Charged)' : 'Successfully signed in.';
+                    successMsg.innerText = premiumText;
+                    setTimeout(() => {
+                        closeAllModals();
+                    }, 2000);
+                } else {
+                    alert('Invalid OTP. Please try again.');
+                }
+                verifyOtpBtn.disabled = false;
+                verifyOtpBtn.innerHTML = 'Verify & Sign In';
+                lucide.createIcons();
+            });
+
+            // AI chat button
+            document.getElementById('ai-chat-btn').addEventListener('click', function() {
+                if (window.Chatling) window.Chatling.open();
+                else alert('Chat assistant loading, please click again in a moment.');
+            });
+
+            // ensure icons refresh after dynamic changes
+            document.addEventListener('click', function() { setTimeout(() => lucide.createIcons(), 50); });
+        });
+    </script>
+</body>
+</html>
